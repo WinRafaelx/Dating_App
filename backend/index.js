@@ -1,11 +1,16 @@
-import express from 'express';
+import express from "express";
+import { mongoose } from "mongoose";
+import { connectDb, userModel } from "./db/db.js";
+
+connectDb()
 
 // Create an instance of Express
 const app = express();
 
 // Define a route
-app.get('/', (req, res) => {
-  res.send('Hello, World!');
+app.get("/", async (req, res) => {
+  const users = await userModel.find();
+  res.send(users);
 });
 
 // Start the server
