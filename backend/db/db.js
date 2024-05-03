@@ -29,17 +29,21 @@ const preferenceSchema = new mongoose.Schema({
   });
 
   const infoFormSchema = new mongoose.Schema({
+    name: String,
+    age: Number,
     profile_picture: String, 
     gender: String,
     birthdate: String, 
     Sub_District: String, 
     District: String, 
     City: String, 
+    Country: String,
+    Postcode: String,
     bio: String
 })
 
 const userModel = mongoose.model("Users", userSchema);
 const preferenceModel = mongoose.model("Preferences", preferenceSchema);
-const infoFormModel = mongoose.model("InfoForm", infoFormSchema);
+const infoFormModel = mongoose.model("UserInfoes", infoFormSchema);
 
 export { connectDb, userModel, preferenceModel, infoFormModel};
