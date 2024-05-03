@@ -28,6 +28,18 @@ const preferenceSchema = new mongoose.Schema({
     preferred_gender: String,
   });
 
-const userModel = mongoose.model("Users", userSchema);
+  const infoFormSchema = new mongoose.Schema({
+    profile_picture: String, 
+    gender: String,
+    birthdate: String, 
+    Sub_District: String, 
+    District: String, 
+    City: String, 
+    bio: String
+})
 
-export { connectDb, userModel };
+const userModel = mongoose.model("Users", userSchema);
+const preferenceModel = mongoose.model("Preferences", preferenceSchema);
+const infoFormModel = mongoose.model("InfoForm", infoFormSchema);
+
+export { connectDb, userModel, preferenceModel, infoFormModel};
