@@ -15,12 +15,6 @@ cloudinary.config({
 const router_dating = express.Router();
 const upload = multer({ dest: "temp/" });
 
-const ImageSchema = new mongoose.Schema({
-  profile_picture: String,
-});
-
-const ImageModel = mongoose.model("Image", ImageSchema);
-
 router_dating.post(
   "/infoform",
   upload.single("profile_picture"),
@@ -45,12 +39,26 @@ router_dating.post(
     // Check if token exists
     if (!token) {
       console.log("Token not found");
+      fs.unlinkSync(profile_picture.path);
       res.sendStatus(401);
     } else {
       decodedToken = jwt.decode(token);
     }
 
     try {
+      const users = await infoFormModel.find({
+        $or: [
+          { $and: [{ firstname: firstname }, { lastname: lastname }] },
+          { _id: decodedToken._id },
+        ],
+      });
+
+      if (users.length > 0) {
+        // Clean up the uploaded image
+        fs.unlinkSync(profile_picture.path);
+        return res.status(409).send("User already exists");
+      }
+
       cloudinary.uploader.upload(
         profile_picture.path,
         {
@@ -58,7 +66,9 @@ router_dating.post(
         },
         async (err, result) => {
           if (err) {
-            res.status(500).send("Fuck up");
+            // Clean up the uploaded image
+            fs.unlinkSync(profile_picture.path);
+            return res.status(500).send("Error uploading image");
           } else {
             const imageURL = result.secure_url;
             const infoFormDB = new infoFormModel({
@@ -77,23 +87,26 @@ router_dating.post(
               bio: bio,
             });
             await infoFormDB.save();
-            fs.unlinkSync(req.file.path);
-            res.status(201).send("Completed fill personal information");
+            // Clean up the uploaded image
+            fs.unlinkSync(profile_picture.path);
+            return res.status(201).send("Completed fill personal information");
           }
         }
       );
     } catch (error) {
-      res.status(500).send("Internal Server Error");
+      // Clean up the uploaded image
+      fs.unlinkSync(profile_picture.path);
+      return res.status(500).send("Internal Server Error");
     }
   }
 );
 
 router_dating.post("/what", (req, res) => {
-    const token = req.cookies.token_auth
-    const _id = jwt.decode(token)
-    console.log(req.body.username_email)
-    
-    res.send("Testing")
-})
+  const token = req.cookies.token_auth;
+  const _id = jwt.decode(token);
+  console.log(req.body.username_email);
+
+  res.send("Testing");
+});
 
 export default router_dating;
