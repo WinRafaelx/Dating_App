@@ -15,12 +15,12 @@ const app = express();
 app.use(express.json())
 app.use(cors());
 app.use(cookieParser());
-// app.use("/app", jwtValidate);
+app.use("/app", jwtValidate);
 
 // Define a route
-// app.get("/app", async (req, res) => {
-//   res.send("Hello");
-// });
+app.get("/app", async (req, res) => {
+  res.send("Hello");
+});
 
 app.use("/auth", authenRouter);
 app.use("/app", DatingRouter);

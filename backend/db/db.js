@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+const { ObjectId } = mongoose.Types;
+
 async function connectDb() {
   // set connection to mongodb
   await mongoose
@@ -29,7 +31,9 @@ const preferenceSchema = new mongoose.Schema({
   });
 
   const infoFormSchema = new mongoose.Schema({
-    name: String,
+    _id: ObjectId,
+    firstname: String,
+    lastname: String,
     age: Number,
     profile_picture: String, 
     gender: String,
