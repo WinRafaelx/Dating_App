@@ -9,45 +9,29 @@ async function connectDb() {
     .then(() => console.log("Connected to MongoDB"));
 }
 
-const userSchema = new mongoose.Schema({
-    user_id: Number,
-    username: String,
-    email: String,
-    password: String,
-    profile_picture: String,
-    gender: String,
-    birthdate: Date,
-    Sub_District: String,
-    District: String,
-    City: String,
-    bio: String
-})
-
 const preferenceSchema = new mongoose.Schema({
-    user_id: Number,
-    preferred_age_min: Number,
-    preferred_age_max: Number,
-    preferred_gender: String,
-  });
+  _id: ObjectId,
+  preferred_age_min: Number,
+  preferred_age_max: Number,
+  preferred_gender: String,
+});
 
-  const infoFormSchema = new mongoose.Schema({
-    _id: ObjectId,
-    firstname: String,
-    lastname: String,
-    age: Number,
-    profile_picture: String, 
-    gender: String,
-    birthdate: String, 
-    Sub_District: String, 
-    District: String, 
-    City: String, 
-    Country: String,
-    Postcode: String,
-    bio: String
-})
+const infoFormSchema = new mongoose.Schema({
+  _id: ObjectId,
+  firstname: String,
+  lastname: String,
+  profile_picture: String,
+  gender: String,
+  birthdate: String,
+  Sub_District: String,
+  District: String,
+  City: String,
+  Country: String,
+  Postcode: String,
+  bio: String,
+});
 
-const userModel = mongoose.model("Users", userSchema);
 const preferenceModel = mongoose.model("Preferences", preferenceSchema);
 const infoFormModel = mongoose.model("UserInfoes", infoFormSchema);
 
-export { connectDb, userModel, preferenceModel, infoFormModel};
+export { connectDb, preferenceModel, infoFormModel };

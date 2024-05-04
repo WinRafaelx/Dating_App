@@ -1,8 +1,8 @@
 import express from "express";
-import { connectDb, userModel } from "./db/db.js";
-import authenRouter from "./Authentication/util.js";
+import { connectDb } from "./db/db.js";
+import authenRouter from "./Authentication/route.js";
 import { jwtValidate } from "./Authentication/token/token.js";
-import DatingRouter from "./DatingFunc/util.js";
+import DatingRouter from "./DatingFunc/route.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 

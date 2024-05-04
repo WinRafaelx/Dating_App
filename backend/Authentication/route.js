@@ -1,6 +1,6 @@
 import express from "express";
 import bcrypt from "bcrypt";
-import { registerModel, registerSchema } from "./model.js";
+import { registerModel } from "./model.js";
 import { generateToken, setTokenCookie } from "./token/token.js";
 
 const router = express.Router();
