@@ -9,6 +9,12 @@ async function connectDb() {
     .then(() => console.log("Connected to MongoDB"));
 }
 
+const registerSchema = new mongoose.Schema({
+  username: String,
+  email: String,
+  password: String,
+});
+
 const preferenceSchema = new mongoose.Schema({
   _id: ObjectId,
   preferred_age_min: Number,
@@ -31,7 +37,27 @@ const infoFormSchema = new mongoose.Schema({
   bio: String,
 });
 
+const likeSchema = new mongoose.Schema(
+  {
+    Liker_ID: ObjectId,
+    Liked_ID: ObjectId,
+  },
+  { timestamps: true }
+);
+
+const matchSchema = new mongoose.Schema(
+  {
+    Matcher_ID: ObjectId,
+    Matched_ID: ObjectId,
+    Matched_Status: String,
+  },
+  { timestamps: true }
+);
+
+const registerModel = mongoose.model("Register", registerSchema);
 const preferenceModel = mongoose.model("Preferences", preferenceSchema);
 const infoFormModel = mongoose.model("UserInfoes", infoFormSchema);
+const likeModel = mongoose.model("Likes", likeSchema);
+const matchModel = mongoose.model("Matches", matchSchema);
 
-export { connectDb, preferenceModel, infoFormModel };
+export { connectDb, preferenceModel, infoFormModel, registerModel, likeModel, matchModel };

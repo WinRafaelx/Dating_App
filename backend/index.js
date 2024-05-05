@@ -5,6 +5,7 @@ import { jwtValidate } from "./Authentication/token/token.js";
 import DatingRouter from "./DatingFunc/route.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import jwt from "jsonwebtoken";
 
 connectDb()
 
@@ -19,8 +20,11 @@ app.use("/app", jwtValidate);
 
 // Define a route
 app.get("/app", async (req, res) => {
-  res.send("Hello");
+  const token = req.cookies.token_auth;
+  const decodedToken = jwt.decode(token);
+  res.json(decodedToken);
 });
+
 
 app.use("/auth", authenRouter);
 app.use("/app", DatingRouter);
