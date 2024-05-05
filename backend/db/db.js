@@ -22,7 +22,7 @@ const infoFormSchema = new mongoose.Schema({
   lastname: String,
   profile_picture: String,
   gender: String,
-  birthdate: String,
+  birthdate: Date,
   Sub_District: String,
   District: String,
   City: String,
