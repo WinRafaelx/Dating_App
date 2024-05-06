@@ -41,8 +41,6 @@ const matching = async (req, res) => {
       return res.status(404).send("User preferences not found");
     }
 
-    console.log(userInfo);
-
     // Define the query criteria based on the addressType
     let query = { _id: { $ne: decodedToken._id }, gender: preferences.preferred_gender };
     if (addressType.toLowerCase() === 'sub_district') {

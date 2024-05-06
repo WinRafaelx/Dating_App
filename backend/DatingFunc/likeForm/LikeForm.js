@@ -41,6 +41,11 @@ const likeForm = async (req, res) => {
                 await newMatch.save();
                 res.status(201).send("Match created");
             } else {
+                const newMatch = new matchModel({
+                    Matcher_ID: liked_user_id,
+                    Matched_ID: decodedToken._id,
+                    Matched_Status: "Pending"
+                });
                 res.status(201).send("Like created");
             }
         }
