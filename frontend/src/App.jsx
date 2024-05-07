@@ -1,36 +1,60 @@
 // App.js
 
-import React, { useState, useEffect } from 'react';
-import socketIOClient from 'socket.io-client';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import socketIOClient from "socket.io-client";
+import axios from "axios";
 
-const ENDPOINT = 'http://localhost:8000'; // Update with your backend endpoint
+const ENDPOINT = "http://localhost:8000"; // Update with your backend endpoint
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const [username, setUsername] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
+  const [sendTo, setSendTo] = useState("");
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const chat = await axios.get(
+          `${ENDPOINT}/app/messageform`,
+          {
+            params: {
+              chatId: "663a2ad79f442f4ed68f9fb7", // Assuming chatId is a query parameter
+            },
+            withCredentials: true,
+          }
+        );
+        console.log(chat.data);
+        setMessages(chat.data);
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    };
+
+    fetchData(); // Load old messages when component mounts
+
     const socket = socketIOClient(ENDPOINT);
 
-    socket.on('message', (message) => {
-      setMessages((prevMessages) => [...prevMessages, message]);
+    socket.on("message", async () => {
+      fetchData(); // Fetch new messages when a new message arrives
     });
 
     return () => socket.disconnect();
   }, []);
 
   const sendMessage = async () => {
-    if (inputMessage.trim() !== '') {
+    if (inputMessage.trim() !== "") {
       try {
-        await axios.post(`${ENDPOINT}/app/chatform`, {
-          text: inputMessage,
-          user: username
-        });
-        setInputMessage('');
+        await axios.post(
+          `${ENDPOINT}/app/messageform`,
+          {
+            message: inputMessage,
+            sendto: sendTo,
+          },
+          { withCredentials: true }
+        );
+        setInputMessage("");
       } catch (error) {
-        console.error('Error sending message:', error);
+        console.error("Error sending message:", error);
       }
     }
   };
@@ -39,8 +63,8 @@ function App() {
     setInputMessage(e.target.value);
   };
 
-  const handleUsernameChange = (e) => {
-    setUsername(e.target.value);
+  const handleSendToChange = (e) => {
+    setSendTo(e.target.value);
   };
 
   return (
@@ -49,26 +73,26 @@ function App() {
       <div>
         <input
           type="text"
-          placeholder="Enter your username"
-          value={username}
-          onChange={handleUsernameChange}
+          placeholder="Send to username"
+          value={sendTo}
+          onChange={handleSendToChange}
         />
       </div>
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ marginBottom: "10px" }}>
         <input
           type="text"
           placeholder="Type your message..."
           value={inputMessage}
           onChange={handleInputChange}
-          onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+          onKeyPress={(e) => e.key === "Enter" && sendMessage()}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
       <div>
         {messages.map((message, index) => (
           <div key={index}>
-            <strong>{message.user}: </strong>
-            {message.text}
+            <strong>{message.Sender_ID}: </strong>
+            {message.Message}
           </div>
         ))}
       </div>

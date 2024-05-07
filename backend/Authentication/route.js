@@ -57,4 +57,13 @@ router.post("/login", async (req, res) => {
   }
 });
 
+// Assuming you're using Express
+router.post('/logout', (req, res) => {
+  // Clear the token_auth cookie
+  res.clearCookie('token_auth');
+  // Optionally, you can redirect the user to another page after logout
+  res.send('Already log out');
+});
+
+
 export default router;

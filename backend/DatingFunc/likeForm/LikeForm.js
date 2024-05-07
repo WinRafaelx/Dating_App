@@ -1,18 +1,10 @@
 import jwt from "jsonwebtoken";
-import { likeModel, matchModel } from "../../db/db.js";
+import { likeModel, matchModel, chatModel } from "../../db/db.js";
 
 const likeForm = async (req, res) => {
     const { liked_user_id } = req.body;
     const token = req.cookies.token_auth;
-    let decodedToken = null;
-
-    if (!token) {
-        console.log("Token not found");
-        res.sendStatus(401);
-        return; // Return to exit the function
-    } else {
-        decodedToken = jwt.decode(token);
-    }
+    const decodedToken = jwt.decode(token);
 
     try {
         let like = await likeModel.findOne({ Liker_ID: decodedToken._id, Liked_ID: liked_user_id });
@@ -39,6 +31,13 @@ const likeForm = async (req, res) => {
                     Matched_Status: "Matched"
                 });
                 await newMatch.save();
+
+                // Create a new chat
+                const newChat = new chatModel({
+                    User1_ID: decodedToken._id,
+                    User2_ID: liked_user_id
+                });
+                await newChat.save();
                 res.status(201).send("Match created");
             } else {
                 const newMatch = new matchModel({

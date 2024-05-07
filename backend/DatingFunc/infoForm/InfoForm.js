@@ -9,18 +9,6 @@ cloudinary.config({
   api_secret: "tebm4Umkq5tx0BHiSPyVn52g1rY",
 });
 
-// Calculate the age function from birthdate
-const calculateAge = (birthdate) => {
-  const today = new Date();
-  const birthDate = new Date(birthdate);
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const month = today.getMonth() - birthDate.getMonth();
-  if (month < 0 || (month === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return age;
-};
-
 const infoForm = async (req, res) => {
   const profile_picture = req.file;
   const {
@@ -37,16 +25,7 @@ const infoForm = async (req, res) => {
   } = req.body;
   const age = calculateAge(birthdate);
   const token = req.cookies.token_auth;
-  let decodedToken = null;
-
-  // Check if token exists
-  if (!token) {
-    console.log("Token not found");
-    fs.unlinkSync(profile_picture.path);
-    res.sendStatus(401);
-  } else {
-    decodedToken = jwt.decode(token);
-  }
+  const decodedToken = jwt.decode(token);
 
   try {
     const users = await infoFormModel.find({

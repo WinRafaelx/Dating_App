@@ -15,18 +15,8 @@ const calculateAge = (birthdate) => {
 
 const matching = async (req, res) => {
   const { addressType } = req.body;
-
   const token = req.cookies.token_auth;
-  if (!token) {
-    console.log("Token not found");
-    return res.sendStatus(401);
-  }
-
-  let decodedToken = jwt.decode(token);
-  if (!decodedToken) {
-    console.log("Invalid token");
-    return res.sendStatus(401);
-  }
+  const decodedToken = jwt.decode(token);
 
   try {
     // Find the user's preferences

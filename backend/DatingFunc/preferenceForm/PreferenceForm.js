@@ -4,15 +4,7 @@ import jwt from "jsonwebtoken";
 const preferenceForm = async (req, res) => {
     const { preferred_age_min, preferred_age_max, preferred_gender } = req.body;
     const token = req.cookies.token_auth;
-    let decodedToken = null;
-
-    if (!token) {
-        console.log("Token not found");
-        res.sendStatus(401);
-        return; // Return to exit the function
-    } else {
-        decodedToken = jwt.decode(token);
-    }
+    const decodedToken = jwt.decode(token);
 
     try {
         let preferences = await preferenceModel.findOne({ _id: decodedToken._id });

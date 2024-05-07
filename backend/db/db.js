@@ -63,9 +63,18 @@ const matchSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const chatSchema = new mongoose.Schema(
+  {
+    Chat_ID: { type: ObjectId, primary: true },
+    User1_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
+    User2_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
+  },
+  { timestamps: true }
+);
+
 const messageSchema = new mongoose.Schema(
   {
-    Chat_ID: { type: ObjectId }, // Foreign key referencing Chat model (assuming Chat model is defined elsewhere)
+    Chat_ID: { type: ObjectId, ref: 'Chat'},
     Sender_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
     Receiver_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
     Message: String,
@@ -80,6 +89,7 @@ const preferenceModel = mongoose.model("Preferences", preferenceSchema);
 const infoFormModel = mongoose.model("UserInfoes", infoFormSchema);
 const likeModel = mongoose.model("Likes", likeSchema);
 const matchModel = mongoose.model("Matches", matchSchema);
+const chatModel = mongoose.model("Chats", chatSchema);
 const messageModel = mongoose.model("Messages", messageSchema);
 
 export {
@@ -89,5 +99,6 @@ export {
   registerModel,
   likeModel,
   matchModel,
+  chatModel,
   messageModel
 };
