@@ -1,104 +1,148 @@
-import mongoose from "mongoose";
+import mysql from 'mysql';
 
-const { ObjectId } = mongoose.Types;
+// Function to initiate connect to MySQL
+async function initialDB() {
+    try {
+        const connection = await mysql.createConnection({
+            host: 'localhost',
+            user: 'root',
+            password: '',
+            database: 'Dating_App'
+        });
+        console.log("Connected to MySQL");
 
-async function connectDb() {
-  // set connection to mongodb
-  await mongoose
-    .connect("mongodb://127.0.0.1:27017/Dating-App")
-    .then(() => console.log("Connected to MongoDB"));
+        // Create tables
+        await createTables(connection);
+
+        // Close connection
+        await connection.end();
+    } catch (error) {
+        console.error("Error connecting to MySQL:", error);
+    }
 }
 
-const registerSchema = new mongoose.Schema(
-  {
-    username: String,
-    email: String,
-    password: String,
-  },
-  { timestamps: true }
-);
+// Function to connect to MySQL
+async function connectDb() {
+    return mysql.createConnection({
+        host: 'localhost',
+        user: 'root',
+        password: '',
+        database: 'Dating_App'
+    });
+}
 
-const preferenceSchema = new mongoose.Schema(
-  {
-    user: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    preferred_age_min: Number,
-    preferred_age_max: Number,
-    preferred_gender: String,
-  },
-  { timestamps: true }
-);
+// Function to create tables
+async function createTables(connection) {
+    try {
+        // userAuth Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS userAuth (
+                user_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+                username VARCHAR(255) NOT NULL UNIQUE,
+                email VARCHAR(255) NOT NULL UNIQUE,
+                password VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+            )
+        `);
 
-const infoFormSchema = new mongoose.Schema(
-  {
-    user: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    firstname: String,
-    lastname: String,
-    profile_picture: String,
-    gender: String,
-    birthdate: Date,
-    Sub_District: String,
-    District: String,
-    City: String,
-    Country: String,
-    Postcode: String,
-    bio: String,
-  },
-  { timestamps: true }
-);
+        // preferences Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS preferences (
+                user_pref_id VARCHAR(36) PRIMARY KEY,
+                preferred_age_min INT NOT NULL,
+                preferred_age_max INT NOT NULL,
+                preferred_gender VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_pref_id) REFERENCES userAuth(user_id)
+            )
+        `);
 
-const likeSchema = new mongoose.Schema(
-  {
-    Liker_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    Liked_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-  },
-  { timestamps: true }
-);
+        // userInfo Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS userInfo (
+                user_info_id VARCHAR(36) PRIMARY KEY,
+                firstname VARCHAR(255) NOT NULL,
+                lastname VARCHAR(255) NOT NULL,
+                profile_picture VARCHAR(255),
+                gender VARCHAR(255) NOT NULL,
+                birthdate DATE NOT NULL,
+                Sub_District VARCHAR(255),
+                District VARCHAR(255),
+                City VARCHAR(255),
+                Country VARCHAR(255),
+                Postcode VARCHAR(255),
+                bio TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (user_info_id) REFERENCES userAuth(user_id)
+            )
+        `);
 
-const matchSchema = new mongoose.Schema(
-  {
-    Matcher_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    Matched_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    Matched_Status: String,
-  },
-  { timestamps: true }
-);
+        // likes Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS likes (
+                like_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+                Liker_ID VARCHAR(36) NOT NULL,
+                Liked_ID VARCHAR(36) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (Liker_ID) REFERENCES userAuth(user_id),
+                FOREIGN KEY (Liked_ID) REFERENCES userAuth(user_id)
+            )
+        `);
 
-const chatSchema = new mongoose.Schema(
-  {
-    Chat_ID: { type: ObjectId, primary: true },
-    User1_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    User2_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-  },
-  { timestamps: true }
-);
+        // matches Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS matches (
+                match_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+                Matcher_ID VARCHAR(36) NOT NULL,
+                Matched_ID VARCHAR(36) NOT NULL,
+                Matched_Status VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (Matcher_ID) REFERENCES userAuth(user_id),
+                FOREIGN KEY (Matched_ID) REFERENCES userAuth(user_id)
+            )
+        `);
 
-const messageSchema = new mongoose.Schema(
-  {
-    Chat_ID: { type: ObjectId, ref: 'Chat'},
-    Sender_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    Receiver_ID: { type: ObjectId, ref: 'Register' }, // Foreign key referencing Register model
-    Message: String,
-    isRead: Boolean,
-    isRead_time: Date,
-  },
-  { timestamps: true }
-);
+        // chats Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS chats (
+                chat_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+                User1_ID VARCHAR(36) NOT NULL,
+                User2_ID VARCHAR(36) NOT NULL,
+                Chat_Status VARCHAR(255) NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (User1_ID) REFERENCES userAuth(user_id),
+                FOREIGN KEY (User2_ID) REFERENCES userAuth(user_id)
+            )
+        `);
 
-const registerModel = mongoose.model("Register", registerSchema);
-const preferenceModel = mongoose.model("Preferences", preferenceSchema);
-const infoFormModel = mongoose.model("UserInfoes", infoFormSchema);
-const likeModel = mongoose.model("Likes", likeSchema);
-const matchModel = mongoose.model("Matches", matchSchema);
-const chatModel = mongoose.model("Chats", chatSchema);
-const messageModel = mongoose.model("Messages", messageSchema);
+        // messages Table with UUID as primary key
+        await connection.query(`
+            CREATE TABLE IF NOT EXISTS messages (
+                message_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
+                Chat_ID VARCHAR(36) NOT NULL,
+                Sender_ID VARCHAR(36) NOT NULL,
+                Receiver_ID VARCHAR(36) NOT NULL,
+                Message TEXT NOT NULL,
+                isRead BOOLEAN NOT NULL DEFAULT FALSE,
+                isRead_time TIMESTAMP,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                FOREIGN KEY (Chat_ID) REFERENCES chats(chat_id),
+                FOREIGN KEY (Sender_ID) REFERENCES userAuth(user_id),
+                FOREIGN KEY (Receiver_ID) REFERENCES userAuth(user_id)
+            )
+        `);
 
-export {
-  connectDb,
-  preferenceModel,
-  infoFormModel,
-  registerModel,
-  likeModel,
-  matchModel,
-  chatModel,
-  messageModel
-};
+        console.log("Tables created successfully");
+    } catch (error) {
+        console.error("Error creating tables:", error);
+    }
+}
+
+export { connectDb, initialDB };

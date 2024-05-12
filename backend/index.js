@@ -1,15 +1,15 @@
 import express from "express";
-import { connectDb } from "./db/db.js";
+import { initialDB } from "./db/db.js";
 import authenRouter from "./Authentication/route.js";
+// import DatingRouter from "./DatingFunc/route.js";
 import { jwtValidate } from "./Authentication/token/token.js";
-import DatingRouter from "./DatingFunc/route.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import http from "http";
 
-connectDb();
+initialDB();
 
 // Create an instance of Express
 const app = express();
@@ -35,13 +35,13 @@ io.on("connection", (socket) => {
 
 // Define a route
 app.get("/app", async (req, res) => {
-  const token = req.cookies.token_auth;
-  const decodedToken = jwt.decode(token);
-  res.json(decodedToken);
+  // const token = req.cookies.token_auth;
+  // const decodedToken = jwt.decode(token);
+  // res.json(decodedToken);
 });
 
 app.use("/auth", authenRouter);
-app.use("/app", DatingRouter);
+// app.use("/app", DatingRouter);
 
 // Start the server
 const PORT = process.env.PORT || 8000;

@@ -1,7 +1,11 @@
 import jwt from "jsonwebtoken";
+import { connectDb } from "../../db/db.js";
+
+// Function to connect to MySQL
+const connection = await connectDb();
 
 const generateToken = (user) => {
-  const token = jwt.sign({ _id: user._id, username: user.username }, 'secret');
+  const token = jwt.sign({ _id: user.user_id, username: user.username }, 'secret');
   return token;
 };
 
@@ -17,12 +21,23 @@ const jwtValidate = (req, res, next) => {
     }
 
     // Verify the token
-    jwt.verify(token, 'secret', (err, decoded) => {
+    jwt.verify(token, 'secret', async (err, decoded) => {
       if (err) {
         console.error("Token verification error:", err.message);
         return res.sendStatus(403);
       }
+
+      // Retrieve user data from the database
+      const query = `SELECT * FROM userAuth WHERE user_id = ?`;
+      const [user] = await connection.query(query, [decoded._id]);
+
+      if (!user) {
+        console.log("User not found in the database");
+        return res.sendStatus(401);
+      }
+
       console.log("Token verification successful");
+      req.user = user; // Attach user data to request object
       next();
     });
   } catch (error) {
