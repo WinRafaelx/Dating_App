@@ -65,7 +65,7 @@ async function createTables(connection) {
                 user_info_id VARCHAR(36) PRIMARY KEY,
                 firstname VARCHAR(255) NOT NULL,
                 lastname VARCHAR(255) NOT NULL,
-                profile_picture VARCHAR(255),
+                profile_picture VARCHAR(255) NOT NULL,
                 gender VARCHAR(255) NOT NULL,
                 birthdate DATE NOT NULL,
                 Sub_District VARCHAR(255),
