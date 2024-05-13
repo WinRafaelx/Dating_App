@@ -29,16 +29,22 @@ const jwtValidate = (req, res, next) => {
 
       // Retrieve user data from the database
       const query = `SELECT * FROM userAuth WHERE user_id = ?`;
-      const [user] = await connection.query(query, [decoded._id]);
+      await connection.query(query, [decoded._id], (err, result) => {
+        if (err) {
+          console.error("Error retrieving user data:", err.sqlMessage || err.message);
+          return res.sendStatus(500);
+        }
 
-      if (!user) {
-        console.log("User not found in the database");
-        return res.sendStatus(401);
-      }
+        const user = result[0];
+        if (!user) {
+          console.log("User not found in the database");
+          return res.sendStatus(401);
+        }
 
-      console.log("Token verification successful");
-      req.user = user; // Attach user data to request object
-      next();
+        console.log("Token verification successful");
+        req.user = user; // Attach user data to request object
+        next();
+      });
     });
   } catch (error) {
     console.error("Error in jwtValidate middleware:", error);
