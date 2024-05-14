@@ -2,6 +2,7 @@ import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
 import { connectDb } from "../../db/db.js";
+import { connect } from "http2";
 
 cloudinary.config({
   cloud_name: "dhudcf11t",
@@ -177,18 +178,34 @@ const updateUserInfo = async (req, res) => {
             SET firstname = ?, lastname = ?, gender = ?, birthdate = ?, Sub_District = ?, District = ?, City = ?, Country = ?, Postcode = ?, bio = ?
             WHERE user_info_id = ?;
         `;
-      connection.query(updateQuery, [firstname, lastname, gender, birthdate, Sub_District, District, City, Country, Postcode, bio, decodedToken._id], (err) => {
-        if (err) {
-          console.error(
-            "Error updating user information:",
-            err.sqlMessage || err.message
-          );
+      connection.query(
+        updateQuery,
+        [
+          firstname,
+          lastname,
+          gender,
+          birthdate,
+          Sub_District,
+          District,
+          City,
+          Country,
+          Postcode,
+          bio,
+          decodedToken._id,
+        ],
+        (err) => {
+          if (err) {
+            console.error(
+              "Error updating user information:",
+              err.sqlMessage || err.message
+            );
+            connection.end();
+            return res.status(500).send("Internal Server Error");
+          }
           connection.end();
-          return res.status(500).send("Internal Server Error");
+          return res.status(200).send("User information updated");
         }
-        connection.end();
-        return res.status(200).send("User information updated");
-      });
+      );
     });
   } catch (error) {
     console.error(error);
@@ -197,4 +214,31 @@ const updateUserInfo = async (req, res) => {
   }
 };
 
-export { infoForm, updateUserInfo };
+const getProfile = async (req, res) => {
+  const token = req.cookies.token_auth;
+  const decodedToken = jwt.decode(token);
+
+  const connection = await connectDb();
+  const query = `SELECT * FROM userInfo WHERE user_info_id = ?`;
+
+  connection.query(query, [decodedToken._id], (err, result) => {
+    if (err) {
+      console.error(
+        "Error retrieving user information:",
+        err.sqlMessage || err.message
+      );
+      connection.end();
+      return res.status(500).send("Internal Server Error");
+    }
+
+    if (result.length === 0) {
+      connection.end();
+      return res.status(404).send("User not found");
+    }
+
+    connection.end();
+    return res.status(200).send(result[0]);
+  });
+};
+
+export { infoForm, updateUserInfo, getProfile };

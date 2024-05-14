@@ -71,8 +71,8 @@ async function createTables(connection) {
                 Sub_District VARCHAR(255),
                 District VARCHAR(255),
                 City VARCHAR(255),
-                Country VARCHAR(255),
-                Postcode VARCHAR(255),
+                Country VARCHAR(255) NOT NULL,
+                Postcode VARCHAR(255) NOT NULL,
                 bio TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -108,12 +108,13 @@ async function createTables(connection) {
         `);
 
         // chats Table with UUID as primary key
+        // User2_ID is the user who like first
         await connection.query(`
             CREATE TABLE IF NOT EXISTS chats (
                 chat_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 User1_ID VARCHAR(36) NOT NULL,
                 User2_ID VARCHAR(36) NOT NULL,
-                Chat_Status VARCHAR(255) NOT NULL,
+                Chat_Status VARCHAR(255) NOT NULL DEFAULT 'Active',
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
                 FOREIGN KEY (User1_ID) REFERENCES userAuth(user_id),

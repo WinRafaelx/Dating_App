@@ -1,56 +1,63 @@
 import jwt from "jsonwebtoken";
-import { likeModel, matchModel, chatModel } from "../../db/db.js";
+import { connectDb } from "../../db/db.js";
 
 const likeForm = async (req, res) => {
-    const { liked_user_id } = req.body;
-    const token = req.cookies.token_auth;
-    const decodedToken = jwt.decode(token);
+  const { liked_user_id } = req.body;
+  const token = req.cookies.token_auth;
+  const decodedToken = jwt.decode(token);
 
-    try {
-        let like = await likeModel.findOne({ Liker_ID: decodedToken._id, Liked_ID: liked_user_id });
+  const connection = await connectDb();
 
-        if (like) {
-            // If like exists, delete it
-            await like.delete();
-            res.status(200).send("Like removed");
-        } else {
-            // If like does not exist, create new like
-            const newLike = new likeModel({
-                Liker_ID: decodedToken._id,
-                Liked_ID: liked_user_id
-            });
-            await newLike.save();
+  if (liked_user_id == decodedToken._id) {
+    return res.status(400).send("You cannot like yourself");
+  }
 
-            // Csheck if the liked user has liked the current user
-            let check_match = await likeModel.findOne({ Liker_ID: liked_user_id, Liked_ID: decodedToken._id });
-            if (check_match) {
-                // If liked exists, create a new match
-                const newMatch = new matchModel({
-                    Matcher_ID: liked_user_id,
-                    Matched_ID: decodedToken._id,
-                    Matched_Status: "Matched"
-                });
-                await newMatch.save();
-
-                // Create a new chat
-                const newChat = new chatModel({
-                    User1_ID: decodedToken._id,
-                    User2_ID: liked_user_id
-                });
-                await newChat.save();
-                res.status(201).send("Match created");
-            } else {
-                const newMatch = new matchModel({
-                    Matcher_ID: liked_user_id,
-                    Matched_ID: decodedToken._id,
-                    Matched_Status: "Pending"
-                });
-                res.status(201).send("Like created");
-            }
+  try {
+    connection.query(
+      "INSERT INTO likes (Liker_ID, Liked_ID) VALUES (?, ?)",
+      [decodedToken._id, liked_user_id],
+      (err) => {
+        if (err) {
+          console.error(err);
+          res.status(500).send("Internal Server Error");
         }
-    } catch (err) {
-        res.status(500).send(err.message);
-    }
-}
+        connection.query(
+          "SELECT * FROM likes WHERE Liker_ID = ? AND Liked_ID = ?",
+          [liked_user_id, decodedToken._id],
+          (err, checkMatch) => {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Internal Server Error");
+            }
+            if (checkMatch.length > 0) {
+              // If liked exists, create a new match
+              connection.query(
+                "INSERT INTO matches (Matcher_ID, Matched_ID, Matched_Status) VALUES (?, ?, ?)",
+                [decodedToken._id, liked_user_id, "Matched"]
+              );
+
+              // Create a new chat
+              connection.query(
+                "INSERT INTO chats (User1_ID, User2_ID) VALUES (?, ?)",
+                [decodedToken._id, liked_user_id]
+              );
+
+              res.status(201).send("Match created");
+            } else {
+              connection.query(
+                "INSERT INTO matches (Matcher_ID, Matched_ID, Matched_Status) VALUES (?, ?, ?)",
+                [liked_user_id, decodedToken._id, "Pending"]
+              );
+              res.status(201).send("Like created");
+            }
+          }
+        );
+      }
+    );
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Internal Server Error");
+  }
+};
 
 export { likeForm };
