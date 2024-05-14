@@ -1,5 +1,3 @@
-// App.js
-
 import React, { useState, useEffect } from "react";
 import socketIOClient from "socket.io-client";
 import axios from "axios";
@@ -10,6 +8,7 @@ function App() {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState("");
   const [sendTo, setSendTo] = useState("");
+  const [chatId, setChatId] = useState("4b14b5fe-11a8-11ef-a41d-76b4fbdd5d7c"); // Assuming chatId is a fixed value for now
 
   useEffect(() => {
     const fetchData = async () => {
@@ -17,9 +16,7 @@ function App() {
         const chat = await axios.get(
           `${ENDPOINT}/app/messageform`,
           {
-            params: {
-              chatId: "663a2ad79f442f4ed68f9fb7", // Assuming chatId is a query parameter
-            },
+            params: { chatId },
             withCredentials: true,
           }
         );
@@ -39,7 +36,7 @@ function App() {
     });
 
     return () => socket.disconnect();
-  }, []);
+  }, [chatId]);
 
   const sendMessage = async () => {
     if (inputMessage.trim() !== "") {
@@ -67,6 +64,21 @@ function App() {
     setSendTo(e.target.value);
   };
 
+  const handleInputFocus = async () => {
+    try {
+      await axios.post(
+        `${ENDPOINT}/app/messageform/isRead`,
+        {
+          chatId,
+          sender: sendTo,
+        },
+        { withCredentials: true }
+      );
+    } catch (error) {
+      console.error("Error marking messages as read:", error);
+    }
+  };
+
   return (
     <div>
       <h1>Chat App</h1>
@@ -85,13 +97,14 @@ function App() {
           value={inputMessage}
           onChange={handleInputChange}
           onKeyPress={(e) => e.key === "Enter" && sendMessage()}
+          onFocus={handleInputFocus}
         />
         <button onClick={sendMessage}>Send</button>
       </div>
       <div>
         {messages.map((message, index) => (
           <div key={index}>
-            <strong>{message.Sender_ID}: </strong>
+            <strong>{message.sender_name}: </strong>
             {message.Message}
           </div>
         ))}
