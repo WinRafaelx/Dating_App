@@ -3,102 +3,61 @@ import axios from 'axios';
 
 const apiUrl = 'http://localhost:8000/admin';
 
-const DataProvider = {
+const dataProvider = {
     getList: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
+        const { q } = params.filter;
 
-        // Fetch all data from the backend
-        const response = await axios.get(`${apiUrl}/${resource}`);
-        const data = response.data.map(item => ({ ...item, id: item.user_id }));
+        const query = {
+            _sort: field,
+            _order: order,
+            _start: (page - 1) * perPage,
+            _end: page * perPage,
+            q: q || '',
+        };
 
-        // Apply sorting
-        const sortedData = data.sort((a, b) => {
-            if (a[field] < b[field]) {
-                return order === 'ASC' ? -1 : 1;
-            }
-            if (a[field] > b[field]) {
-                return order === 'ASC' ? 1 : -1;
-            }
-            return 0;
-        });
-
-        // Apply pagination
-        const paginatedData = sortedData.slice((page - 1) * perPage, page * perPage);
-
+        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
+        const response = await axios.get(url);
+        let data;
+        if (resource === 'userAuth')
+            data = await response.data.map(item => ({ ...item, id: item.user_id }));
+        else if (resource === 'preferences')
+            data = await response.data.map(item => ({ ...item, id: item.user_pref_id}));
         return {
-            data: paginatedData,
-            total: data.length,
+            data: data,
+            total: parseInt(data.length) || 0,
         };
     },
     getOne: async (resource, params) => {
         const response = await axios.get(`${apiUrl}/${resource}/${params.id}`);
         return {
-            data: { ...response.data, id: response.data.user_id },
-        };
-    },
-    getMany: async (resource, params) => {
-        const response = await axios.get(`${apiUrl}/${resource}`);
-        const data = response.data.map(item => ({ ...item, id: item.user_id }));
-        const filteredData = data.filter(item => params.ids.includes(item.id));
-        return {
-            data: filteredData,
-        };
-    },
-    getManyReference: async (resource, params) => {
-        const response = await axios.get(`${apiUrl}/${resource}`);
-        const data = response.data.map(item => ({ ...item, id: item.user_id }));
-        const filteredData = data.filter(item => item[params.target] === params.id);
-        const sortedData = filteredData.sort((a, b) => {
-            if (a[params.sort.field] < b[params.sort.field]) {
-                return params.sort.order === 'ASC' ? -1 : 1;
-            }
-            if (a[params.sort.field] > b[params.sort.field]) {
-                return params.sort.order === 'ASC' ? 1 : -1;
-            }
-            return 0;
-        });
-        const paginatedData = sortedData.slice(
-            (params.pagination.page - 1) * params.pagination.perPage,
-            params.pagination.page * params.pagination.perPage
-        );
-        return {
-            data: paginatedData,
-            total: filteredData.length,
-        };
-    },
-    update: async (resource, params) => {
-        const response = await axios.put(`${apiUrl}/${resource}/${params.id}`, params.data);
-        return {
-            data: { ...response.data, id: response.data.user_id },
-        };
-    },
-    updateMany: async (resource, params) => {
-        const response = await axios.put(`${apiUrl}/${resource}`, { ids: params.ids, data: params.data });
-        const data = response.data.map(item => ({ ...item, id: item.user_id }));
-        return {
-            data: data,
+            data: { ...response.data, id: response.data.user_pref_id || response.data.user_id },
         };
     },
     create: async (resource, params) => {
         const response = await axios.post(`${apiUrl}/${resource}`, params.data);
         return {
-            data: { ...params.data, id: response.data.user_id },
+            data: { ...params.data, id: response.data.user_pref_id || response.data.user_id },
+        };
+    },
+    update: async (resource, params) => {
+        const response = await axios.put(`${apiUrl}/${resource}/${params.id}`, params.data);
+        return {
+            data: { ...response.data, id: response.data.user_pref_id || response.data.user_id },
         };
     },
     delete: async (resource, params) => {
         const response = await axios.delete(`${apiUrl}/${resource}/${params.id}`);
         return {
-            data: { ...response.data, id: response.data.user_id },
+            data: { ...response.data, id: response.data.user_pref_id || response.data.user_id },
         };
     },
     deleteMany: async (resource, params) => {
-        const response = await axios.delete(`${apiUrl}/${resource}`, { data: { ids: params.ids } });
-        const data = response.data.map(item => ({ ...item, id: item.user_id }));
-        return {
-            data: data,
-        };
+        console.log(params.ids, resource);
+        const response = await axios.delete(`${apiUrl}/${resource}Many`, { data: { ids: params.ids } });
+        return response.data;
     },
 };
 
-export default DataProvider;
+export default dataProvider;

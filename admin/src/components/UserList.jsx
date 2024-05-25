@@ -1,8 +1,9 @@
 import React from 'react';
-import { List, Datagrid, TextField, EmailField } from 'react-admin';
+import { List, Datagrid, TextField, EmailField, EditButton, DeleteButton } from 'react-admin';
+import UserFilter from './UserFilter';
 
 const UserList = (props) => (
-    <List {...props}>
+    <List filters={<UserFilter />} {...props}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="username" />
@@ -10,6 +11,8 @@ const UserList = (props) => (
             <TextField source="role" />
             <TextField source="created_at" />
             <TextField source="updated_at" />
+            <EditButton />
+            <DeleteButton />
         </Datagrid>
     </List>
 );

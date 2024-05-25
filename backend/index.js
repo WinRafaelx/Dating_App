@@ -1,5 +1,4 @@
 import express from "express";
-import { initialDB } from "./db/db.js";
 import authenRouter from "./Authentication/route.js";
 import DatingRouter from "./DatingFunc/route.js";
 import adminRouter from "./Admin/route.js";
@@ -9,8 +8,6 @@ import cors from 'cors';
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import http from "http";
-
-initialDB();
 
 // Create an instance of Express
 const app = express();

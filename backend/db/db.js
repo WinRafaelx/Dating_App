@@ -1,42 +1,11 @@
-import mysql from "mysql";
-import bcrypt from "bcrypt";
-
-// Function to initiate connect to MySQL
-async function initialDB() {
-  try {
-    const connection = await mysql.createConnection({
-      host: "localhost",
-      user: "root",
-      password: "",
-      database: "Dating_App",
-    });
-    console.log("Connected to MySQL");
-
-    // Create tables
-    await createTables(connection);
-
-    // Close connection
-    await connection.end();
-  } catch (error) {
-    console.error("Error connecting to MySQL:", error);
-  }
-}
-
-// Function to connect to MySQL
-async function connectDb() {
-  return mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "",
-    database: "Dating_App",
-  });
-}
+import bcrypt from 'bcrypt';
+import { connectDb, queryAsync } from './dbConfig.js';
 
 // Function to create tables
 async function createTables(connection) {
   try {
     // userAuth Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS userAuth (
                 user_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 username VARCHAR(255) NOT NULL UNIQUE,
@@ -48,29 +17,8 @@ async function createTables(connection) {
             )
         `);
 
-    // Check if default admin and data analyst users exist
-    const adminQuery = `SELECT * FROM userAuth WHERE username = 'admin'`;
-    const analystQuery = `SELECT * FROM userAuth WHERE username = 'data_analyst'`;
-
-    if (
-      !(await connection.query(adminQuery)) &&
-      (await connection.query(analystQuery))
-    ) {
-      // Hash passwords
-      const adminPassword = await bcrypt.hash("adminpassword", 10);
-      const analystPassword = await bcrypt.hash("analystpassword", 10);
-
-      // Insert default admin and data analyst users
-      await connection.query(`
-            INSERT INTO userAuth (user_id, username, email, password, role)
-            VALUES 
-                (UUID(), 'admin', 'admin@example.com', '${adminPassword}', 'admin'),
-                (UUID(), 'data_analyst', 'analyst@example.com', '${analystPassword}', 'data-analyst')
-        `);
-    }
-
     // preferences Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS preferences (
                 user_pref_id VARCHAR(36) PRIMARY KEY,
                 preferred_age_min INT NOT NULL,
@@ -83,7 +31,7 @@ async function createTables(connection) {
         `);
 
     // userInfo Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS userInfo (
                 user_info_id VARCHAR(36) PRIMARY KEY,
                 firstname VARCHAR(255) NOT NULL,
@@ -104,7 +52,7 @@ async function createTables(connection) {
         `);
 
     // likes Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS likes (
                 like_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 Liker_ID VARCHAR(36) NOT NULL,
@@ -117,7 +65,7 @@ async function createTables(connection) {
         `);
 
     // matches Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS matches (
                 match_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 Matcher_ID VARCHAR(36) NOT NULL,
@@ -131,8 +79,7 @@ async function createTables(connection) {
         `);
 
     // chats Table with UUID as primary key
-    // User2_ID is the user who like first
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS chats (
                 chat_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 User1_ID VARCHAR(36) NOT NULL,
@@ -146,7 +93,7 @@ async function createTables(connection) {
         `);
 
     // messages Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS messages (
                 message_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 Chat_ID VARCHAR(36) NOT NULL,
@@ -164,7 +111,7 @@ async function createTables(connection) {
         `);
 
     // reports Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS reports (
                 report_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 Reporter_ID VARCHAR(36) NOT NULL,
@@ -179,7 +126,7 @@ async function createTables(connection) {
         `);
 
     // block Table with UUID as primary key
-    await connection.query(`
+    await queryAsync(connection, `
             CREATE TABLE IF NOT EXISTS blocks (
                 block_id VARCHAR(36) PRIMARY KEY DEFAULT (UUID()),
                 Blocker_ID VARCHAR(36) NOT NULL,
@@ -191,10 +138,55 @@ async function createTables(connection) {
             )
         `);
 
-    console.log("Tables created successfully");
+    // Check if default admin and data analyst users exist
+    const adminRows = await queryAsync(
+      connection,
+      `SELECT * FROM userAuth WHERE username = 'admin'`
+    );
+    const analystRows = await queryAsync(
+      connection,
+      `SELECT * FROM userAuth WHERE username = 'data_analyst'`
+    );
+
+    if (adminRows.length === 0) {
+      const adminPassword = await bcrypt.hash("adminpassword", 10);
+      await queryAsync(connection, `
+          INSERT INTO userAuth (user_id, username, email, password, role)
+          VALUES 
+              (UUID(), 'admin', 'admin@example.com', '${adminPassword}', 'admin')
+      `);
+    }
+
+    if (analystRows.length === 0) {
+      const analystPassword = await bcrypt.hash("analystpassword", 10);
+      await queryAsync(connection, `
+          INSERT INTO userAuth (user_id, username, email, password, role)
+          VALUES 
+              (UUID(), 'data_analyst', 'data_analyst@example.com', '${analystPassword}', 'data-analyst')
+      `);
+    }
+
   } catch (error) {
     console.error("Error creating tables:", error);
   }
 }
+
+// Function to initiate connect to MySQL
+async function initialDB() {
+  try {
+    const connection = await connectDb();
+    console.log("Connected to MySQL");
+
+    // Create tables
+    await createTables(connection);
+
+    // Close connection
+    await connection.end();
+  } catch (error) {
+    console.error("Error connecting to MySQL:", error);
+  }
+}
+
+initialDB();
 
 export { connectDb, initialDB };
