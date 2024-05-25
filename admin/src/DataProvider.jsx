@@ -1,9 +1,11 @@
-import { fetchUtils } from 'react-admin';
 import axios from 'axios';
+import { fetchUtils } from 'react-admin';
+import { stringify } from 'query-string';
 
 const apiUrl = 'http://localhost:8000/admin';
 
 const dataProvider = {
+
     getList: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
@@ -13,13 +15,16 @@ const dataProvider = {
             range: JSON.stringify([(page - 1) * perPage, page * perPage]),
             filter: JSON.stringify(filter),
         };
-
-        const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
+        console.log(query, JSON.stringify(filter))
+        const url = `${apiUrl}/${resource}?${stringify(query)}`;
         const response = await axios.get(url);
-        const data = await response.data.map(item => ({ ...item, id: item.user_id || item.user_pref_id}));
+        const data = response.data.map(item => ({
+            ...item,
+            id: item.user_id || item.user_pref_id,
+        }));
         return {
             data: data,
-            total: parseInt(data.length) || 0,
+            total: parseInt(data.length, 10),
         };
     },
     getOne: async (resource, params) => {

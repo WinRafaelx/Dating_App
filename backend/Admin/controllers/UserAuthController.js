@@ -1,132 +1,138 @@
-import { connectDb } from "../../db/db.js";
+import { connectDb, queryAsync } from '../../db/db.js';
 
 
 const getUsers = async (req, res) => {
-  const connection = await connectDb();
-  const { q } = req.query.filter ? JSON.parse(req.query.filter) : {};
+  const connection = connectDb();
+
+  try {
+    const { filter, sort, range } = req.query;
+    const { q } = filter ? JSON.parse(filter) : {};
+    const sortParams = sort ? JSON.parse(sort) : ['user_id', 'ASC'];
+    const rangeParams = range ? JSON.parse(range) : [0, 25];
+    let [sortField, sortOrder] = sortParams;
+    const [rangeStart, rangeEnd] = rangeParams;
 
     let sql = 'SELECT * FROM userAuth';
+    const params = [];
+
     if (q) {
-        sql += ` WHERE user_id LIKE '%${q}%' OR username LIKE '%${q}%' OR email LIKE '%${q}%' OR role LIKE '%${q}%'`;
+      sql += ` WHERE user_id LIKE ? OR username LIKE ? OR email LIKE ? OR role LIKE ?`;
+      params.push(`%${q}%`, `%${q}%`, `%${q}%`, `%${q}%`);
     }
 
-    connection.query(sql, (error, results) => {
-        if (error) {
-            return res.status(500).json({ error: error.message });
-        }
+    if (sortField === 'id') sortField = 'user_id';
+    sql += ` ORDER BY ${sortField} ${sortOrder}`;
+    sql += ` LIMIT ?, ?`;
+    params.push(rangeStart, rangeEnd - rangeStart + 1);
 
-        res.setHeader('Content-Range', `userAuth 0-${results.length}/${results.length}`);
-        res.json(results);
-    });
+    const results = await queryAsync(connection, sql, params);
+    const countResults = await queryAsync(connection, 'SELECT COUNT(*) AS total FROM userAuth');
+
+    const total = countResults[0].total;
+    res.setHeader('Content-Range', `userAuth ${rangeStart}-${rangeStart + results.length - 1}/${total}`);
+    res.json(results);
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  } finally {
+    connection.end();
+  }
 };
 
 const getUser = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { id } = req.params;
-  const query = 'SELECT * FROM userAuth WHERE user_id = ?';
-  connection.query(query, [id], (error, results) => {
-      if (error) {
-          res.status(500).send(error);
-      } else {
-          res.json(results[0]);
-      }
-  });
+
+  try {
+    const results = await queryAsync(connection, 'SELECT * FROM userAuth WHERE user_id = ?', [id]);
+    res.json(results[0]);
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
+  }
 };
 
 const createUser = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { username, email, password, role } = req.body;
   const query = 'INSERT INTO userAuth (username, email, password, role) VALUES (?, ?, ?, ?)';
 
   try {
-    connection.query(query, [username, email, password, role], (error, results) => {
-      if (error) {
-        res.status(500).send(error);
-      } else {
-        res.status(201).json({ ...req.body, user_id: results.insertId });
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
+    const results = await queryAsync(connection, query, [username, email, password, role]);
+    res.status(201).json({ ...req.body, user_id: results.insertId });
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
   }
 };
 
 const updateUser = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { id } = req.params;
   const { username, email, password, role } = req.body;
   const query = 'UPDATE userAuth SET username = ?, email = ?, password = ?, role = ? WHERE user_id = ?';
 
   try {
-    connection.query(query, [username, email, password, role, id], (error, results) => {
-      if (error) {
-        res.status(500).send(error);
-      } else {
-        res.status(200).json({ ...req.body, user_id: id });
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
+    await queryAsync(connection, query, [username, email, password, role, id]);
+    res.status(200).json({ ...req.body, user_id: id });
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
   }
 };
 
 const deleteUser = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { id } = req.params;
   const query = 'DELETE FROM userAuth WHERE user_id = ?';
 
   try {
-    connection.query(query, [id], (error, results) => {
-      if (error) {
-        res.status(500).send(error);
-      } else {
-        res.status(200).json(results);
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
+    await queryAsync(connection, query, [id]);
+    res.status(200).json({ message: 'Deleted successfully' });
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
   }
 };
 
 const getMany = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { filter } = req.query;
   const ids = JSON.parse(filter).id;
   const query = 'SELECT * FROM userAuth WHERE user_id IN (?)';
 
   try {
-    connection.query(query, [ids], (error, results) => {
-      if (error) {
-        res.status(500).send(error);
-      } else {
-        res.status(200).json(results);
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
+    const results = await queryAsync(connection, query, [ids]);
+    res.status(200).json(results);
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
   }
 };
 
 const deleteMany = async (req, res) => {
-  const connection = await connectDb();
+  const connection = connectDb();
   const { ids } = req.body;
   const query = 'DELETE FROM userAuth WHERE user_id IN (?)';
 
   try {
-    connection.query(query, [ids], (error, results) => {
-      if (error) {
-        res.status(500).send(error);
-      } else {
-        res.status(200).send("Deleted successfully");
-      }
-    });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
+    await queryAsync(connection, query, [ids]);
+    res.status(200).send('Deleted successfully');
+  } catch (error) {
+    console.error('Internal Server Error:', error);
+    res.status(500).send('Internal Server Error');
+  } finally {
+    connection.end();
   }
 };
 

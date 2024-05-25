@@ -1,6 +1,6 @@
 import express from 'express';
-import { getUsers, getUser, createUser, updateUser, deleteUser, getMany, deleteMany } from './controllers/UserAuthController.js';
-import { getPreferences, getPreference, createPreference, updatePreference, deletePreference } from './controllers/preferenceController.js';
+import { getUsers, getUser, createUser, updateUser, deleteUser, getMany, deleteMany } from './controllers/UserAuthController.js'
+import { getPreferences, getPreference, createPreference, updatePreference, deletePreference } from './controllers/PreferenceController.js';
 
 const router = express.Router();
 
