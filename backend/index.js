@@ -2,7 +2,8 @@ import express from "express";
 import { initialDB } from "./db/db.js";
 import authenRouter from "./Authentication/route.js";
 import DatingRouter from "./DatingFunc/route.js";
-import { userValidate } from "./Authentication/token/token.js";
+import adminRouter from "./Admin/route.js";
+import { userValidate, adminValidate, data_analystValidate } from "./Authentication/token/token.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import jwt from "jsonwebtoken";
@@ -24,6 +25,8 @@ app.use(cors({
 }));
 app.use(cookieParser());
 app.use("/app", userValidate);
+// app.use("/admin", adminValidate);
+app.use("/data_analyst", data_analystValidate);
 
 io.on("connection", (socket) => {
   console.log("A user connected");
@@ -42,6 +45,7 @@ app.get("/app", async (req, res) => {
 
 app.use("/auth", authenRouter);
 app.use("/app", DatingRouter);
+app.use("/admin", adminRouter);
 
 // Start the server
 const PORT = process.env.PORT || 8000;
