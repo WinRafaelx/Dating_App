@@ -2,7 +2,7 @@ import express from "express";
 import { initialDB } from "./db/db.js";
 import authenRouter from "./Authentication/route.js";
 import DatingRouter from "./DatingFunc/route.js";
-import { jwtValidate } from "./Authentication/token/token.js";
+import { userValidate } from "./Authentication/token/token.js";
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import jwt from "jsonwebtoken";
@@ -23,7 +23,7 @@ app.use(cors({
   credentials: true,
 }));
 app.use(cookieParser());
-app.use("/app", jwtValidate);
+app.use("/app", userValidate);
 
 io.on("connection", (socket) => {
   console.log("A user connected");

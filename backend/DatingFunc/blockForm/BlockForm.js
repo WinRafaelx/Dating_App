@@ -14,14 +14,27 @@ const blockForm = async (req, res) => {
 
   try {
     connection.query(
-      "INSERT INTO blocks (Blocker_ID, Blocked_ID) VALUES (?, ?)",
-      [decodedToken._id, blocked_user_id],
-      (err) => {
+      "SELECT * FROM blocks WHERE (Blocker_ID = ? AND Blocked_ID = ?) or (Blocker_ID = ? AND Blocked_ID = ?)",
+      [decodedToken._id, blocked_user_id, blocked_user_id, decodedToken._id],
+      (err, result) => {
         if (err) {
           console.error(err);
           res.status(500).send("Internal Server Error");
         }
-        res.status(201).send("Blocked user");
+        if (result.length > 0) {
+          return res.status(400).send("You have already blocked this user Or User has blocked you");
+        }
+        connection.query(
+          "INSERT INTO blocks (Blocker_ID, Blocked_ID) VALUES (?, ?)",
+          [decodedToken._id, blocked_user_id],
+          (err) => {
+            if (err) {
+              console.error(err);
+              res.status(500).send("Internal Server Error");
+            }
+            res.status(201).send("User blocked");
+          }
+        );
       }
     );
   } catch (err) {
@@ -30,4 +43,4 @@ const blockForm = async (req, res) => {
   }
 };
 
-export { blockForm}
+export { blockForm };

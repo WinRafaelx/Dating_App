@@ -9,7 +9,7 @@ const generateToken = (user) => {
   return token;
 };
 
-const jwtValidate = (req, res, next) => {
+const userValidate = (req, res, next) => {
   try {
     // Retrieve the token from the cookie
     const token = req.cookies.token_auth;
@@ -28,7 +28,7 @@ const jwtValidate = (req, res, next) => {
       }
 
       // Retrieve user data from the database
-      const query = `SELECT * FROM userAuth WHERE user_id = ?`;
+      const query = `SELECT * FROM userAuth WHERE user_id = ? and role = 'user'`;
       await connection.query(query, [decoded._id], (err, result) => {
         if (err) {
           console.error("Error retrieving user data:", err.sqlMessage || err.message);
@@ -61,4 +61,4 @@ const setTokenCookie = (res, token) => {
   res.cookie("token_auth", token, cookieOptions); // Use res.cookie to set the token cookie
 };
 
-export { generateToken, jwtValidate, setTokenCookie };
+export { generateToken, userValidate, setTokenCookie };
