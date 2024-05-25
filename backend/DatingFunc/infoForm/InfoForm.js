@@ -2,7 +2,6 @@ import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import jwt from "jsonwebtoken";
 import { connectDb } from "../../db/db.js";
-import { connect } from "http2";
 
 cloudinary.config({
   cloud_name: "dhudcf11t",
