@@ -7,23 +7,16 @@ const dataProvider = {
     getList: async (resource, params) => {
         const { page, perPage } = params.pagination;
         const { field, order } = params.sort;
-        const { q } = params.filter;
-
+        const filter = params.filter || {};
         const query = {
-            _sort: field,
-            _order: order,
-            _start: (page - 1) * perPage,
-            _end: page * perPage,
-            q: q || '',
+            sort: JSON.stringify([field, order]),
+            range: JSON.stringify([(page - 1) * perPage, page * perPage]),
+            filter: JSON.stringify(filter),
         };
 
         const url = `${apiUrl}/${resource}?${fetchUtils.queryParameters(query)}`;
         const response = await axios.get(url);
-        let data;
-        if (resource === 'userAuth')
-            data = await response.data.map(item => ({ ...item, id: item.user_id }));
-        else if (resource === 'preferences')
-            data = await response.data.map(item => ({ ...item, id: item.user_pref_id}));
+        const data = await response.data.map(item => ({ ...item, id: item.user_id || item.user_pref_id}));
         return {
             data: data,
             total: parseInt(data.length) || 0,

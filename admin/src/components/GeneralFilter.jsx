@@ -1,10 +1,10 @@
 import React from 'react';
 import { Filter, TextInput } from 'react-admin';
 
-const UserFilter = (props) => (
+const GeneralFilter = (props) => (
     <Filter {...props}>
         <TextInput label="Search" source="q" alwaysOn />
     </Filter>
 );
 
-export default UserFilter;
+export default GeneralFilter;

@@ -3,44 +3,23 @@ import { connectDb } from "../../db/db.js";
 
 const getUsers = async (req, res) => {
   const connection = await connectDb();
-  const { _sort = 'created_at', _order = 'DESC', _start = 0, _end = 10, q = '' } = req.query;
-  const start = parseInt(_start);
-  const end = parseInt(_end);
-  const limit = end - start;
-  const searchQuery = `%${q}%`;
+  const { q } = req.query.filter ? JSON.parse(req.query.filter) : {};
 
-  const query = `
-    SELECT * FROM userAuth
-    WHERE username LIKE ? OR email LIKE ?
-    ORDER BY ?? ${_order === 'ASC' ? 'ASC' : 'DESC'}
-    LIMIT ?, ?
-  `;
+    let sql = 'SELECT * FROM userAuth';
+    if (q) {
+        sql += ` WHERE user_id LIKE '%${q}%' OR username LIKE '%${q}%' OR email LIKE '%${q}%' OR role LIKE '%${q}%'`;
+    }
 
-  try {
-    connection.query(query, [searchQuery, searchQuery, _sort, start, limit], (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Internal Server Error");
-      } else {
-        connection.query(
-          'SELECT COUNT(*) AS count FROM userAuth WHERE username LIKE ? OR email LIKE ?',
-          [searchQuery, searchQuery],
-          (err, countResults) => {
-            if (err) {
-              res.status(500).send(err);
-            } else {
-              res.setHeader('X-Total-Count', countResults[0].count);
-              res.status(200).json(results);
-            }
-          }
-        );
-      }
+    connection.query(sql, (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
+
+        res.setHeader('Content-Range', `userAuth 0-${results.length}/${results.length}`);
+        res.json(results);
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
-  }
 };
+
 const getUser = async (req, res) => {
   const connection = await connectDb();
   const { id } = req.params;

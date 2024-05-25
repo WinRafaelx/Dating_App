@@ -2,44 +2,21 @@ import { connectDb } from "../../db/db.js";
 
 const getPreferences = async (req, res) => {
   const connection = await connectDb();
-  const { _sort = 'user_pref_id', _order = 'DESC', _start = 0, _end = 10 } = req.query;
-  const start = parseInt(_start);
-  const end = parseInt(_end);
-  const limit = end - start;
+  const { q } = req.query.filter ? JSON.parse(req.query.filter) : {};
 
-  // List valid columns for sorting
-  const validSortFields = ['user_pref_id', 'preferred_age_min', 'preferred_age_max', 'preferred_gender', 'created_at', 'updated_at'];
-  const sortField = validSortFields.includes(_sort) ? _sort : 'user_pref_id';
+    let sql = 'SELECT * FROM preferences';
+    if (q) {
+        sql += ` WHERE user_pref_id LIKE '%${q}%' OR preferred_age_min LIKE '%${q}%' OR preferred_age_max LIKE '%${q}%' OR preferred_gender LIKE '%${q}%'`;
+    }
 
-  const query = `
-    SELECT * FROM preferences
-    ORDER BY ?? ${_order === 'ASC' ? 'ASC' : 'DESC'}
-    LIMIT ?, ?
-  `;
+    connection.query(sql, (error, results) => {
+        if (error) {
+            return res.status(500).json({ error: error.message });
+        }
 
-  try {
-    connection.query(query, [sortField, start, limit], (err, results) => {
-      if (err) {
-        console.error(err);
-        res.status(500).send("Internal Server Error");
-      } else {
-        connection.query(
-          'SELECT COUNT(*) AS count FROM preferences',
-          (err, countResults) => {
-            if (err) {
-              res.status(500).send(err);
-            } else {
-              res.setHeader('X-Total-Count', countResults[0].count);
-              res.status(200).json(results);
-            }
-          }
-        );
-      }
+        res.setHeader('Content-Range', `preferences 0-${results.length}/${results.length}`);
+        res.json(results);
     });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Internal Server Error");
-  }
 };
 
 const getPreference = async (req, res) => {

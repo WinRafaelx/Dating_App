@@ -1,9 +1,9 @@
 import React from 'react';
 import { List, Datagrid, TextField, EmailField, EditButton, DeleteButton } from 'react-admin';
-import UserFilter from './UserFilter';
+import GeneralFilter from '../GeneralFilter.jsx';
 
-const UserList = (props) => (
-    <List filters={<UserFilter />} {...props}>
+const UserAuthList = (props) => (
+    <List filters={<GeneralFilter />} {...props}>
         <Datagrid rowClick="edit">
             <TextField source="id" />
             <TextField source="username" />
@@ -17,4 +17,4 @@ const UserList = (props) => (
     </List>
 );
 
-export default UserList;
+export default UserAuthList;

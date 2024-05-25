@@ -1,15 +1,20 @@
 import React from 'react';
 import { Admin, Resource } from 'react-admin';
 import dataProvider from './DataProvider.jsx';
-import UserList from './components/UserList';
-import PreferenceList from './components/PreferenceList';
-import PreferenceEdit from './components/PreferenceEdit';
-import PreferenceCreate from './components/PreferenceCreate';
+
+import UserAuthList from './components/userAuth/UserAuthList.jsx';
+import UserAuthCreate from './components/userAuth/UserAuthCreate.jsx';
+
+import PreferenceList from './components/preference/PreferenceList.jsx';
+import PreferenceEdit from './components/preference/PreferenceEdit.jsx';
+import PreferenceCreate from './components/preference/PreferenceCreate.jsx';
+
+import CustomMenu from './components/CustomMenu'; // Import the custom menu
 import './App.css';
 
 const App = () => (
-    <Admin dataProvider={dataProvider}>
-        <Resource name="userAuth" list={UserList} />
+    <Admin dataProvider={dataProvider} menu={CustomMenu}>
+        <Resource name="userAuth" list={UserAuthList} create={UserAuthCreate} />
         <Resource name="preferences" list={PreferenceList} edit={PreferenceEdit} create={PreferenceCreate} />
     </Admin>
 );
