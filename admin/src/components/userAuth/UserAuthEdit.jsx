@@ -7,7 +7,7 @@ const roleChioces = [
     { id: 'data-analyst', name: 'Data Analyst' },
 ];
 
-const UserAuthCreate = (props) => (
+const UserAuthEdit = (props) => (
     <Edit {...props}>
         <SimpleForm>
             <TextInput source="username" fullWidth/>
@@ -18,4 +18,4 @@ const UserAuthCreate = (props) => (
     </Edit>
 );
 
-export default UserAuthCreate;
+export default UserAuthEdit;
