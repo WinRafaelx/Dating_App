@@ -9,8 +9,8 @@ const PreferenceList = (props) => (
             <TextField source="preferred_age_min" />
             <TextField source="preferred_age_max" />
             <TextField source="preferred_gender" />
-            <EditButton basePath="/preferences" />
-            <DeleteButton basePath="/preferences" />
+            <EditButton />
+            <DeleteButton />
         </Datagrid>
     </List>
 );

@@ -2,6 +2,32 @@ import { io } from "../../index.js";
 import jwt from "jsonwebtoken";
 import { connectDb } from "../../db/db.js";
 
+const getAvailableChats = async (req, res) => {
+  const token = req.cookies.token_auth;
+  const decodedToken = jwt.decode(token);
+
+  const connection = await connectDb();
+
+  try {
+    connection.query(
+      "SELECT * FROM chats WHERE User1_ID = ? OR User2_ID = ?",
+      [decodedToken._id, decodedToken._id],
+      (err, chats) => {
+        if (err) {
+          console.error("Error retrieving chats:", err);
+          return res.status(500).send("Internal Server Error");
+        }
+        connection.end();
+        res.json(chats);
+      }
+    );
+  } catch (err) {
+    console.error("Error retrieving chats:", err);
+    connection.end();
+    res.status(500).send("Internal Server Error");
+  }
+}
+
 const getMessages = async (req, res) => {
   const { chatId } = req.query;
   const connection = await connectDb();
@@ -102,4 +128,4 @@ const isRead = async (req, res) => {
   }
 };
 
-export { getMessages, sendMessage, isRead };
+export { getAvailableChats, getMessages, sendMessage, isRead };

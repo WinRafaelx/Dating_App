@@ -4,15 +4,7 @@ import { Create, SimpleForm, TextInput, NumberInput, SelectInput } from 'react-a
 const genderChoices = [
     { id: 'Male', name: 'Male' },
     { id: 'Female', name: 'Female' },
-    { id: 'Non-binary', name: 'Non-binary' },
-    { id: 'Transgender', name: 'Transgender' },
-    { id: 'Genderqueer', name: 'Genderqueer' },
-    { id: 'Genderfluid', name: 'Genderfluid' },
-    { id: 'Agender', name: 'Agender' },
-    { id: 'Bigender', name: 'Bigender' },
-    { id: 'Pangender', name: 'Pangender' },
-    { id: 'Two-Spirit', name: 'Two-Spirit' },
-    { id: 'Other', name: 'Other' },
+    { id: 'LGBTQ+', name: 'LGBTQ+' }
 ];
 
 const PreferenceCreate = (props) => (

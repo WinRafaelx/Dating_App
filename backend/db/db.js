@@ -189,4 +189,4 @@ async function initialDB() {
 
 initialDB();
 
-export { connectDb, initialDB };
+export { connectDb, initialDB, queryAsync };
