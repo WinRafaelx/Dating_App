@@ -1,0 +1,25 @@
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.ra-admin {
+  height: 100%;
+}
+
+.ra-layout-contentWithSidebar {
+  height: 100%;
+}
+
+.ra-layout-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.ra-layout-appFrame {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
