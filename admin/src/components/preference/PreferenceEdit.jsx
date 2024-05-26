@@ -1,5 +1,6 @@
 import React from 'react';
-import { Edit, SimpleForm, TextInput, NumberInput, SelectInput } from 'react-admin';
+import { Edit, SimpleForm, NumberInput, SelectInput } from 'react-admin';
+import { CustomToolbarEdit } from '../CustomToolbar';
 
 const genderChoices = [
     { id: 'Male', name: 'Male' },
@@ -9,7 +10,7 @@ const genderChoices = [
 
 const PreferenceEdit = (props) => (
     <Edit {...props}>
-        <SimpleForm>
+        <SimpleForm toolbar={<CustomToolbarEdit />}>
             <NumberInput source="preferred_age_min" fullWidth/>
             <NumberInput source="preferred_age_max" fullWidth/>
             <SelectInput source="preferred_gender" choices={genderChoices} fullWidth/>

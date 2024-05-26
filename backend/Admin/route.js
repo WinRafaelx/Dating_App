@@ -1,16 +1,16 @@
 import express from 'express';
-import { getUsers, getUser, createUser, updateUser, deleteUser, getMany, deleteMany } from './controllers/UserAuthController.js'
+import { getManyUserAuth, getUserAuth, createUserAuth, updateUserAuth, deleteUserAuth, deleteManyUserAuth } from './controllers/UserAuthController.js'
 import { getPreferences, getPreference, createPreference, updatePreference, deletePreference } from './controllers/PreferenceController.js';
+import { getManyUserInfo, getUserInfo, createUserInfo, updateUserInfo, deleteUserInfo, deleteManyUserInfo } from './controllers/UserInfoController.js';
 
 const router = express.Router();
 
-router.get('/userAuth', getUsers);
-router.get('/userAuth/:id', getUser);
-router.post('/userAuth', createUser);
-router.put('/userAuth/:id', updateUser);
-router.delete('/userAuth/:id', deleteUser);
-router.get('/userAuthMany', getMany); // Custom route for getting many
-router.delete('/userAuthMany', deleteMany); // Custom route for deleting many
+router.get('/userAuth', getManyUserAuth);
+router.get('/userAuth/:id', getUserAuth);
+router.post('/userAuth', createUserAuth);
+router.put('/userAuth/:id', updateUserAuth);
+router.delete('/userAuth/:id', deleteUserAuth);
+router.delete('/userAuthMany', deleteManyUserAuth); // Custom route for deleting many
 
 router.get('/preferences', getPreferences);
 router.get('/preferences/:id', getPreference);

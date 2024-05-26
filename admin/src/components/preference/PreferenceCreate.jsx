@@ -1,5 +1,6 @@
 import React from 'react';
 import { Create, SimpleForm, TextInput, NumberInput, SelectInput } from 'react-admin';
+import { CustomToolbarCreate } from '../CustomToolbar.jsx';
 
 const genderChoices = [
     { id: 'Male', name: 'Male' },
@@ -9,7 +10,7 @@ const genderChoices = [
 
 const PreferenceCreate = (props) => (
     <Create {...props}>
-        <SimpleForm>
+        <SimpleForm toolbar={<CustomToolbarCreate />}>
             <TextInput source="user_pref_id" fullWidth/>
             <NumberInput source="preferred_age_min" fullWidth/>
             <NumberInput source="preferred_age_max" fullWidth/>

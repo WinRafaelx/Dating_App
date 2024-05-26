@@ -1,7 +1,7 @@
 import { connectDb, queryAsync } from '../../db/db.js';
 
 
-const getUsers = async (req, res) => {
+const getManyUserAuth = async (req, res) => {
   const connection = connectDb();
 
   try {
@@ -39,7 +39,7 @@ const getUsers = async (req, res) => {
   }
 };
 
-const getUser = async (req, res) => {
+const getUserAuth = async (req, res) => {
   const connection = connectDb();
   const { id } = req.params;
 
@@ -54,7 +54,7 @@ const getUser = async (req, res) => {
   }
 };
 
-const createUser = async (req, res) => {
+const createUserAuth = async (req, res) => {
   const connection = connectDb();
   const { username, email, password, role } = req.body;
   const query = 'INSERT INTO userAuth (username, email, password, role) VALUES (?, ?, ?, ?)';
@@ -70,7 +70,7 @@ const createUser = async (req, res) => {
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUserAuth = async (req, res) => {
   const connection = connectDb();
   const { id } = req.params;
   const { username, email, password, role } = req.body;
@@ -87,7 +87,7 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUserAuth = async (req, res) => {
   const connection = connectDb();
   const { id } = req.params;
   const query = 'DELETE FROM userAuth WHERE user_id = ?';
@@ -103,24 +103,7 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const getMany = async (req, res) => {
-  const connection = connectDb();
-  const { filter } = req.query;
-  const ids = JSON.parse(filter).id;
-  const query = 'SELECT * FROM userAuth WHERE user_id IN (?)';
-
-  try {
-    const results = await queryAsync(connection, query, [ids]);
-    res.status(200).json(results);
-  } catch (error) {
-    console.error('Internal Server Error:', error);
-    res.status(500).send('Internal Server Error');
-  } finally {
-    connection.end();
-  }
-};
-
-const deleteMany = async (req, res) => {
+const deleteManyUserAuth = async (req, res) => {
   const connection = connectDb();
   const { ids } = req.body;
   const query = 'DELETE FROM userAuth WHERE user_id IN (?)';
@@ -136,4 +119,4 @@ const deleteMany = async (req, res) => {
   }
 };
 
-export { getUsers, getUser, createUser, updateUser, deleteUser, getMany, deleteMany };
+export { getManyUserAuth, getUserAuth, createUserAuth, updateUserAuth, deleteUserAuth, deleteManyUserAuth };

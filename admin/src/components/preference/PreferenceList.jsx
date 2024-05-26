@@ -4,8 +4,8 @@ import GeneralFilter from '../GeneralFilter.jsx';
 
 const PreferenceList = (props) => (
     <List filters={<GeneralFilter />} {...props}>
-        <Datagrid>
-            <TextField source="id" />
+        <Datagrid rowClick='edit'>
+            <TextField source="id"/>
             <TextField source="preferred_age_min" />
             <TextField source="preferred_age_max" />
             <TextField source="preferred_gender" />

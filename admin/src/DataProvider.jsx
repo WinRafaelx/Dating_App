@@ -15,7 +15,6 @@ const dataProvider = {
             range: JSON.stringify([(page - 1) * perPage, page * perPage]),
             filter: JSON.stringify(filter),
         };
-        console.log(query, JSON.stringify(filter))
         const url = `${apiUrl}/${resource}?${stringify(query)}`;
         const response = await axios.get(url);
         const data = response.data.map(item => ({

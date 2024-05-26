@@ -4,7 +4,8 @@ const getPreferences = async (req, res) => {
   const connection = connectDb();
 
   try {
-    const { q, sort, range } = req.query;
+    const { filter, sort, range } = req.query;
+    const { q } = filter ? JSON.parse(filter) : {};
     const sortParams = sort ? JSON.parse(sort) : ['user_pref_id', 'ASC'];
     const rangeParams = range ? JSON.parse(range) : [0, 25];
     let [sortField, sortOrder] = sortParams;
